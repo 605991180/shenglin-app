@@ -54,12 +54,10 @@ class _SpiritDetailPageState extends State<SpiritDetailPage> {
 
   String _genderIcon(String? gender) {
     switch (gender) {
-      case '雄性':
+      case '男':
         return '\u2642';
-      case '雌性':
+      case '女':
         return '\u2640';
-      case '中性':
-        return '\u26A5';
       default:
         return '';
     }
@@ -175,7 +173,7 @@ class _SpiritDetailPageState extends State<SpiritDetailPage> {
                         _genderIcon(_spirit.gender),
                         style: TextStyle(
                           fontSize: 16,
-                          color: _spirit.gender == '雌性'
+                          color: _spirit.gender == '女'
                               ? Colors.pink
                               : const Color(0xFF2196F3),
                         ),

@@ -10,7 +10,7 @@ class GenderSelector extends StatelessWidget {
     required this.onChanged,
   });
 
-  static const List<String> genders = ['雄性', '雌性', '中性'];
+  static const List<String> genders = ['男', '女'];
 
   @override
   Widget build(BuildContext context) {

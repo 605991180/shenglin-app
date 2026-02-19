@@ -126,6 +126,32 @@ class SpiritDao {
     return spirits;
   }
 
+  static Future<List<Spirit>> getSpiritsByTagId(int tagId) async {
+    final db = await _db;
+    final maps = await db.rawQuery('''
+      SELECT s.* FROM spirits s
+      INNER JOIN spirit_tags st ON s.id = st.spirit_id
+      WHERE st.tag_id = ?
+      ORDER BY s.pinyin ASC
+    ''', [tagId]);
+    final spirits = maps.map((m) => Spirit.fromMap(m)).toList();
+    for (final s in spirits) {
+      s.tags = await getTagsForSpirit(s.id);
+    }
+    return spirits;
+  }
+
+  static Future<List<String>> getSpiritNamesByTagId(int tagId) async {
+    final db = await _db;
+    final maps = await db.rawQuery('''
+      SELECT s.name FROM spirits s
+      INNER JOIN spirit_tags st ON s.id = st.spirit_id
+      WHERE st.tag_id = ?
+      ORDER BY s.pinyin ASC
+    ''', [tagId]);
+    return maps.map((m) => m['name'] as String).toList();
+  }
+
   static Future<int> getCount() async {
     final db = await _db;
     final result =

@@ -6,6 +6,7 @@ import '../widgets/alphabet_index.dart';
 import 'add_spirit_page.dart';
 import 'settings_page.dart';
 import 'spirit_detail_page.dart';
+import 'tag_index_page.dart';
 
 class SpiritListPage extends StatefulWidget {
   const SpiritListPage({super.key});
@@ -91,11 +92,12 @@ class _SpiritListPageState extends State<SpiritListPage> {
     if (result == true) _loadSpirits();
   }
 
-  void _openSettings() {
-    Navigator.push(
+  Future<void> _openSettings() async {
+    final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(builder: (_) => const SettingsPage()),
     );
+    if (result == true) _loadSpirits();
   }
 
   Future<void> _openDetail(Spirit spirit) async {
@@ -270,10 +272,20 @@ class _SpiritListPageState extends State<SpiritListPage> {
     );
   }
 
+  Future<void> _openTagIndex() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => const TagIndexPage()),
+    );
+    if (result == true) _loadSpirits();
+  }
+
   Widget _buildTagIndexBanner() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
-      child: Container(
+      child: GestureDetector(
+        onTap: _openTagIndex,
+        child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           color: const Color(0xFFE8F5E9),
@@ -327,6 +339,7 @@ class _SpiritListPageState extends State<SpiritListPage> {
             const Icon(Icons.chevron_right,
                 color: Color(0xFF4CAF50), size: 20),
           ],
+        ),
         ),
       ),
     );

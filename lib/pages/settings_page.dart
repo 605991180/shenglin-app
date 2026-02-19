@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'import_vcard_page.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,51 +21,107 @@ class SettingsPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          '设置',
+          '通讯设置',
           style: TextStyle(
             color: Color(0xFF333333),
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        centerTitle: true,
+        centerTitle: false,
       ),
-      body: Container(
-        margin: const EdgeInsets.only(top: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            _buildItem(context, Icons.download_outlined, '从设备导入'),
-            _buildDivider(),
-            _buildItem(context, Icons.upload_outlined, '导出生灵数据'),
-            _buildDivider(),
-            _buildItem(context, Icons.auto_fix_high, '批量整理'),
-            _buildDivider(),
-            _buildItem(context, Icons.info_outline, '关于'),
-            _buildDivider(),
-            _buildItem(context, Icons.help_outline, '帮助与反馈'),
+            // Group 1: Import/Export
+            _buildCard([
+              _buildItem(
+                Icons.contacts_outlined,
+                '从通讯录导入',
+                onTap: () => _openVcardImport(),
+              ),
+              _buildDivider(),
+              _buildItem(
+                Icons.chat_bubble_outline,
+                '从微信导入',
+                onTap: () => _showTodo('从微信导入'),
+              ),
+              _buildDivider(),
+              _buildItem(
+                Icons.ios_share_outlined,
+                '导出生灵数据',
+                onTap: () => _showTodo('导出生灵数据'),
+              ),
+            ]),
+            const SizedBox(height: 16),
+            // Group 2: Batch
+            _buildCard([
+              _buildItem(
+                Icons.checklist_outlined,
+                '批量整理',
+                onTap: () => _showTodo('批量整理'),
+              ),
+            ]),
+            const SizedBox(height: 16),
+            // Group 3: About
+            _buildCard([
+              _buildItem(
+                Icons.help_outline,
+                '帮助与反馈',
+                onTap: () => _showTodo('帮助与反馈'),
+              ),
+              _buildDivider(),
+              _buildItem(
+                Icons.info_outline,
+                '关于',
+                onTap: () => _showTodo('关于'),
+              ),
+            ]),
+            const SizedBox(height: 32),
+            // Version info
+            const Text(
+              '生灵池 版本 2.4.0 (2026.02.19)',
+              style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              '\u00a9 2026 Lifepool Tech.',
+              style: TextStyle(fontSize: 12, color: Color(0xFFBBBBBB)),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildItem(BuildContext context, IconData icon, String title) {
+  Widget _buildCard(List<Widget> children) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: children,
+      ),
+    );
+  }
+
+  Widget _buildItem(
+    IconData icon,
+    String title, {
+    VoidCallback? onTap,
+  }) {
     return InkWell(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$title - 功能开发中')),
-        );
-      },
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
         child: Row(
           children: [
-            Icon(icon, size: 22, color: const Color(0xFF666666)),
+            Icon(icon, size: 24, color: const Color(0xFF999999)),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -70,8 +132,10 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right,
-                size: 20, color: Color(0xFFCCCCCC)),
+            const Text(
+              '\u203A',
+              style: TextStyle(fontSize: 20, color: Color(0xFFCCCCCC)),
+            ),
           ],
         ),
       ),
@@ -80,8 +144,24 @@ class SettingsPage extends StatelessWidget {
 
   Widget _buildDivider() {
     return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.only(left: 52),
       child: Divider(height: 1, color: Color(0xFFEEEEEE)),
+    );
+  }
+
+  Future<void> _openVcardImport() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => const ImportVcardPage()),
+    );
+    if (result == true && mounted) {
+      Navigator.pop(context, true);
+    }
+  }
+
+  void _showTodo(String feature) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$feature - 功能开发中')),
     );
   }
 }
