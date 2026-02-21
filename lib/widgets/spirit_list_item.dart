@@ -6,6 +6,7 @@ class SpiritListItem extends StatelessWidget {
   final String? subtitle;
   final String? avatarPath;
   final VoidCallback? onTap;
+  final Widget? trailing;
 
   const SpiritListItem({
     super.key,
@@ -13,6 +14,7 @@ class SpiritListItem extends StatelessWidget {
     this.subtitle,
     this.avatarPath,
     this.onTap,
+    this.trailing,
   });
 
   @override
@@ -52,6 +54,10 @@ class SpiritListItem extends StatelessWidget {
                 ],
               ),
             ),
+            if (trailing != null) ...[
+              const SizedBox(width: 8),
+              trailing!,
+            ],
             const Icon(
               Icons.chevron_right,
               color: Color(0xFFCCCCCC),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'spirit_list_page.dart';
 import 'placeholder_page.dart';
+import 'refined_field_page.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -14,7 +15,7 @@ class _MainNavigationState extends State<MainNavigation> {
 
   final List<Widget> _pages = const [
     SpiritListPage(),
-    PlaceholderPage(title: '精养田', icon: Icons.grass),
+    RefinedFieldPage(),
     SizedBox.shrink(), // placeholder for center button
     PlaceholderPage(title: '资源树', icon: Icons.park),
     PlaceholderPage(title: '我的', icon: Icons.person),
