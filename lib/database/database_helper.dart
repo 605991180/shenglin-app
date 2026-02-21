@@ -18,8 +18,9 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -34,6 +35,8 @@ class DatabaseHelper {
         avatar TEXT,
         gender TEXT,
         age INTEGER,
+        identity TEXT,
+        identity_level TEXT,
         preference TEXT,
         personality TEXT,
         affinity TEXT,
@@ -68,6 +71,13 @@ class DatabaseHelper {
     await db.execute(
         'CREATE INDEX idx_spirits_first_letter ON spirits(first_letter)');
     await db.execute('CREATE INDEX idx_tags_name ON tags(name)');
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE spirits ADD COLUMN identity TEXT');
+      await db.execute('ALTER TABLE spirits ADD COLUMN identity_level TEXT');
+    }
   }
 
   Future<void> close() async {

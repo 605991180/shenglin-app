@@ -21,10 +21,21 @@ class _EditSpiritPageState extends State<EditSpiritPage> {
   late TextEditingController _affinityController;
   late TextEditingController _personalityController;
   late TextEditingController _memoController;
+  late TextEditingController _identityLevelController;
   late List<TextEditingController> _phoneControllers;
   String? _gender;
+  String? _identity;
+  String? _identityLevel;
   List<Tag> _tags = [];
   List<String> _photos = [];
+
+  static const List<String> _identityTypes = ['政客', '商人', '异士', '群众'];
+  static const List<String> _politicianLevels = [
+    '村级', '职员', '股级', '副科', '正科', '副处', '正处', '副厅', '正厅', '副部', '正部',
+  ];
+  static const List<String> _merchantLevels = [
+    '千级', '万级', '十万级', '五十万级', '百万级', '千万级', '亿级',
+  ];
 
   @override
   void initState() {
@@ -36,6 +47,11 @@ class _EditSpiritPageState extends State<EditSpiritPage> {
     _personalityController = TextEditingController(text: s.personality ?? '');
     _memoController = TextEditingController(text: s.memo ?? '');
     _gender = s.gender;
+    _identity = s.identity;
+    _identityLevel = s.identityLevel;
+    _identityLevelController = TextEditingController(
+      text: (_identity == '异士' || _identity == '群众') ? (s.identityLevel ?? '') : '',
+    );
     _tags = List.from(s.tags);
     _photos = List.from(s.photos);
     _phoneControllers = s.phone.isEmpty
@@ -50,6 +66,7 @@ class _EditSpiritPageState extends State<EditSpiritPage> {
     _affinityController.dispose();
     _personalityController.dispose();
     _memoController.dispose();
+    _identityLevelController.dispose();
     for (final c in _phoneControllers) {
       c.dispose();
     }
@@ -74,6 +91,8 @@ class _EditSpiritPageState extends State<EditSpiritPage> {
       name: name,
       gender: _gender,
       age: int.tryParse(_ageController.text.trim()),
+      identity: _identity,
+      identityLevel: _getIdentityLevelValue(),
       affinity: _affinityController.text.trim().isEmpty
           ? null
           : _affinityController.text.trim(),
@@ -109,6 +128,15 @@ class _EditSpiritPageState extends State<EditSpiritPage> {
 
   void _addPhone() {
     setState(() => _phoneControllers.add(TextEditingController()));
+  }
+
+  String? _getIdentityLevelValue() {
+    if (_identity == null) return null;
+    if (_identity == '异士' || _identity == '群众') {
+      final text = _identityLevelController.text.trim();
+      return text.isEmpty ? null : text;
+    }
+    return _identityLevel;
   }
 
   void _removePhoto(int index) {
@@ -311,6 +339,9 @@ class _EditSpiritPageState extends State<EditSpiritPage> {
           _buildEditRow('年龄', _ageController,
               keyboardType: TextInputType.number, suffix: '岁'),
           _buildDivider(),
+          // 主要身份
+          _buildIdentitySection(),
+          _buildDivider(),
           _buildEditRow('偏属', _affinityController),
           _buildDivider(),
           _buildEditRow('性格', _personalityController),
@@ -492,6 +523,135 @@ class _EditSpiritPageState extends State<EditSpiritPage> {
             style: const TextStyle(fontSize: 15, color: Color(0xFF333333)),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildIdentitySection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Label + type selector
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(
+                width: 70,
+                child: Padding(
+                  padding: EdgeInsets.only(top: 8),
+                  child: Text('主要身份',
+                      style: TextStyle(fontSize: 15, color: Color(0xFF333333))),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _identityTypes.map((type) {
+                    final isSelected = _identity == type;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _identity = isSelected ? null : type;
+                          _identityLevel = null;
+                          _identityLevelController.clear();
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? const Color(0xFF4CAF50)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected
+                                ? const Color(0xFF4CAF50)
+                                : const Color(0xFFDDDDDD),
+                          ),
+                        ),
+                        child: Text(
+                          type,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isSelected
+                                ? Colors.white
+                                : const Color(0xFF666666),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+          // Level selector (only when identity is selected)
+          if (_identity != null) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const SizedBox(
+                  width: 70,
+                  child: Text('身份等级',
+                      style: TextStyle(fontSize: 15, color: Color(0xFF333333))),
+                ),
+                const SizedBox(width: 16),
+                Expanded(child: _buildLevelSelector()),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLevelSelector() {
+    if (_identity == '政客') {
+      return _buildDropdownLevel(_politicianLevels);
+    } else if (_identity == '商人') {
+      return _buildDropdownLevel(_merchantLevels);
+    } else {
+      // 异士 / 群众 → 自由录入
+      return TextField(
+        controller: _identityLevelController,
+        decoration: InputDecoration(
+          hintText: '请输入$_identity等级或描述',
+          hintStyle: const TextStyle(color: Color(0xFFCCCCCC)),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.zero,
+          isDense: true,
+        ),
+        style: const TextStyle(fontSize: 15, color: Color(0xFF333333)),
+      );
+    }
+  }
+
+  Widget _buildDropdownLevel(List<String> levels) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFFEEEEEE)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: levels.contains(_identityLevel) ? _identityLevel : null,
+          isExpanded: true,
+          hint: const Text('请选择等级',
+              style: TextStyle(fontSize: 15, color: Color(0xFFCCCCCC))),
+          icon: const Icon(Icons.keyboard_arrow_down,
+              color: Color(0xFF999999)),
+          style: const TextStyle(fontSize: 15, color: Color(0xFF333333)),
+          items: levels
+              .map((l) => DropdownMenuItem(value: l, child: Text(l)))
+              .toList(),
+          onChanged: (v) => setState(() => _identityLevel = v),
+        ),
       ),
     );
   }

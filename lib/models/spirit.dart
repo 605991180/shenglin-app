@@ -7,6 +7,8 @@ class Spirit {
   final String? avatar;
   final String? gender;
   final int? age;
+  final String? identity;
+  final String? identityLevel;
   final String? preference;
   final String? personality;
   final String? affinity;
@@ -25,6 +27,8 @@ class Spirit {
     this.avatar,
     this.gender,
     this.age,
+    this.identity,
+    this.identityLevel,
     this.preference,
     this.personality,
     this.affinity,
@@ -49,6 +53,8 @@ class Spirit {
       'avatar': avatar,
       'gender': gender,
       'age': age,
+      'identity': identity,
+      'identity_level': identityLevel,
       'preference': preference,
       'personality': personality,
       'affinity': affinity,
@@ -69,6 +75,8 @@ class Spirit {
       avatar: map['avatar'] as String?,
       gender: map['gender'] as String?,
       age: map['age'] as int?,
+      identity: map['identity'] as String?,
+      identityLevel: map['identity_level'] as String?,
       preference: map['preference'] as String?,
       personality: map['personality'] as String?,
       affinity: map['affinity'] as String?,
@@ -98,6 +106,8 @@ class Spirit {
     String? avatar,
     String? gender,
     int? age,
+    String? identity,
+    String? identityLevel,
     String? preference,
     String? personality,
     String? affinity,
@@ -115,6 +125,8 @@ class Spirit {
       avatar: avatar ?? this.avatar,
       gender: gender ?? this.gender,
       age: age ?? this.age,
+      identity: identity ?? this.identity,
+      identityLevel: identityLevel ?? this.identityLevel,
       preference: preference ?? this.preference,
       personality: personality ?? this.personality,
       affinity: affinity ?? this.affinity,

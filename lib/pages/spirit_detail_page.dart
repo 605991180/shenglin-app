@@ -52,6 +52,16 @@ class _SpiritDetailPageState extends State<SpiritDetailPage> {
     }
   }
 
+  String _buildIdentityText() {
+    if (_spirit.identity == null || _spirit.identity!.isEmpty) {
+      return '未设置';
+    }
+    if (_spirit.identityLevel != null && _spirit.identityLevel!.isNotEmpty) {
+      return '${_spirit.identity} · ${_spirit.identityLevel}';
+    }
+    return _spirit.identity!;
+  }
+
   String _genderIcon(String? gender) {
     switch (gender) {
       case '男':
@@ -99,7 +109,7 @@ class _SpiritDetailPageState extends State<SpiritDetailPage> {
                 elevation: 0,
                 minimumSize: Size.zero,
               ),
-              child: const Text('保存',
+              child: const Text('编辑',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             ),
           ),
@@ -233,6 +243,7 @@ class _SpiritDetailPageState extends State<SpiritDetailPage> {
           _buildDetailRow('性别', _spirit.gender ?? '未设置'),
           _buildDetailRow(
               '年龄', _spirit.age != null ? '${_spirit.age}岁' : '未设置'),
+          _buildDetailRow('主要身份', _buildIdentityText()),
           _buildDetailRow('偏属', _spirit.affinity ?? '未设置'),
           _buildDetailRow('性格', _spirit.personality ?? '未设置',
               isLast: true),
