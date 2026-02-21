@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'spirit_list_page.dart';
 import 'placeholder_page.dart';
 import 'refined_field_page.dart';
+import 'diary_home_page.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -23,9 +24,10 @@ class _MainNavigationState extends State<MainNavigation> {
 
   void _onTabTap(int index) {
     if (index == 2) {
-      // Center "+" button - could open a quick-add action
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('快捷功能开发中')),
+      // Center "+" button - open diary page
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const DiaryHomePage()),
       );
       return;
     }

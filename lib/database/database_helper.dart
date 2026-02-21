@@ -18,7 +18,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       onConfigure: (db) async {
@@ -91,6 +91,37 @@ class DatabaseHelper {
     ''');
     await db.execute('CREATE INDEX idx_refined_field_dept ON refined_field(department_id)');
     await db.execute('CREATE INDEX idx_refined_field_system ON refined_field(system_id)');
+
+    // 日记表
+    await db.execute('''
+      CREATE TABLE diaries (
+        id TEXT PRIMARY KEY,
+        date INTEGER NOT NULL,
+        content TEXT,
+        image_paths TEXT,
+        weather TEXT,
+        location TEXT,
+        latitude REAL,
+        longitude REAL,
+        device TEXT,
+        word_count INTEGER DEFAULT 0,
+        is_bookmarked INTEGER DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    ''');
+    await db.execute('CREATE INDEX idx_diaries_date ON diaries(date)');
+
+    // 日记草稿表
+    await db.execute('''
+      CREATE TABLE diary_drafts (
+        id TEXT PRIMARY KEY,
+        diary_id TEXT,
+        content TEXT,
+        image_paths TEXT,
+        saved_at INTEGER NOT NULL
+      )
+    ''');
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -118,6 +149,38 @@ class DatabaseHelper {
       ''');
       await db.execute('CREATE INDEX IF NOT EXISTS idx_refined_field_dept ON refined_field(department_id)');
       await db.execute('CREATE INDEX IF NOT EXISTS idx_refined_field_system ON refined_field(system_id)');
+    }
+    if (oldVersion < 4) {
+      // 添加日记表
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS diaries (
+          id TEXT PRIMARY KEY,
+          date INTEGER NOT NULL,
+          content TEXT,
+          image_paths TEXT,
+          weather TEXT,
+          location TEXT,
+          latitude REAL,
+          longitude REAL,
+          device TEXT,
+          word_count INTEGER DEFAULT 0,
+          is_bookmarked INTEGER DEFAULT 0,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_diaries_date ON diaries(date)');
+
+      // 添加日记草稿表
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS diary_drafts (
+          id TEXT PRIMARY KEY,
+          diary_id TEXT,
+          content TEXT,
+          image_paths TEXT,
+          saved_at INTEGER NOT NULL
+        )
+      ''');
     }
   }
 
