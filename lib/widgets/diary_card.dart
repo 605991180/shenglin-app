@@ -109,22 +109,10 @@ class DiaryCard extends StatelessWidget {
   }
 
   String _getPlainText() {
-    // content is Quill Delta JSON; extract plain text for preview
     final content = entry.content;
-    if (content.isEmpty) return '';
-    try {
-      // Quill delta is a JSON array of ops: [{"insert":"text\n"}]
-      // Quick extraction: just grab all "insert" string values
-      final reg = RegExp(r'"insert"\s*:\s*"((?:[^"\\]|\\.)*)"');
-      final matches = reg.allMatches(content);
-      final buf = StringBuffer();
-      for (final m in matches) {
-        buf.write(m.group(1)?.replaceAll('\\n', ' ') ?? '');
-      }
-      final text = buf.toString().trim();
-      return text.isNotEmpty ? text : '(无内容)';
-    } catch (_) {
-      return content.length > 100 ? '${content.substring(0, 100)}...' : content;
-    }
+    if (content.isEmpty) return '(无内容)';
+    // Content is now plain text
+    final text = content.trim();
+    return text.isNotEmpty ? text : '(无内容)';
   }
 }

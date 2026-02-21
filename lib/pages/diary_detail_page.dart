@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart';
 import 'package:intl/intl.dart';
 import '../database/diary_dao.dart';
 import '../models/diary_entry.dart';
@@ -244,47 +242,14 @@ class _DiaryDetailPageState extends State<DiaryDetailPage> {
         style: TextStyle(fontSize: 15, color: Color(0xFFCCCCCC)),
       );
     }
-    try {
-      final doc = Document.fromJson(jsonDecode(_entry!.content));
-      final controller = QuillController(
-        document: doc,
-        selection: const TextSelection.collapsed(offset: 0),
-        readOnly: true,
-      );
-      return QuillEditor(
-        controller: controller,
-        focusNode: FocusNode(),
-        scrollController: ScrollController(),
-        config: QuillEditorConfig(
-          showCursor: false,
-          autoFocus: false,
-          expands: false,
-          padding: EdgeInsets.zero,
-          customStyles: DefaultStyles(
-            paragraph: DefaultTextBlockStyle(
-              const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF333333),
-                height: 1.6,
-              ),
-              const HorizontalSpacing(0, 0),
-              const VerticalSpacing(4, 4),
-              const VerticalSpacing(0, 0),
-              null,
-            ),
-          ),
-        ),
-      );
-    } catch (_) {
-      return Text(
-        _entry!.content,
-        style: const TextStyle(
-          fontSize: 16,
-          color: Color(0xFF333333),
-          height: 1.6,
-        ),
-      );
-    }
+    return Text(
+      _entry!.content,
+      style: const TextStyle(
+        fontSize: 16,
+        color: Color(0xFF333333),
+        height: 1.6,
+      ),
+    );
   }
 
   Widget _buildImageGrid() {
