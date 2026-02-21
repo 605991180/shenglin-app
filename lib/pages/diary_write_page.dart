@@ -340,14 +340,12 @@ class _DiaryWritePageState extends State<DiaryWritePage> {
               // 编辑区域
               Expanded(
                 child: Theme(
-                  data: ThemeData.dark().copyWith(
+                  data: Theme.of(context).copyWith(
                     canvasColor: bgColor,
                     scaffoldBackgroundColor: bgColor,
-                    colorScheme: const ColorScheme.dark(
-                      surface: Color(0xFF1C1C1E),
-                    ),
                   ),
-                  child: Padding(
+                  child: Container(
+                    color: bgColor,
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
