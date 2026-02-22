@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../database/spirit_dao.dart';
+import '../utils/csv_export_helper.dart';
+import '../widgets/export_csv_dialog.dart';
 import 'import_vcard_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -43,15 +46,9 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               _buildDivider(),
               _buildItem(
-                Icons.chat_bubble_outline,
-                '从微信导入',
-                onTap: () => _showTodo('从微信导入'),
-              ),
-              _buildDivider(),
-              _buildItem(
-                Icons.ios_share_outlined,
-                '导出生灵数据',
-                onTap: () => _showTodo('导出生灵数据'),
+                Icons.table_chart_outlined,
+                '导出Excel',
+                onTap: () => _showCsvExportDialog(),
               ),
             ]),
             const SizedBox(height: 16),
@@ -81,7 +78,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 32),
             // Version info
             const Text(
-              '生灵池 版本 2.4.0 (2026.02.19)',
+              '生灵池 版本 4.2.0 (2026.02.22)',
               style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
             ),
             const SizedBox(height: 4),
@@ -157,6 +154,20 @@ class _SettingsPageState extends State<SettingsPage> {
     if (result == true && mounted) {
       Navigator.pop(context, true);
     }
+  }
+
+  Future<void> _showCsvExportDialog() async {
+    final count = await SpiritDao.getCount();
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (_) => ExportCsvDialog(
+        filePrefix: '生灵池',
+        recordCount: count,
+        headers: CsvExportHelper.spiritHeaders,
+        buildRows: CsvExportHelper.buildSpiritRows,
+      ),
+    );
   }
 
   void _showTodo(String feature) {

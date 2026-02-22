@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../database/diary_dao.dart';
 import '../models/diary_entry.dart';
+import '../utils/csv_export_helper.dart';
 import '../widgets/diary_calendar.dart';
 import '../widgets/diary_card.dart';
 import '../widgets/diary_export_dialog.dart';
+import '../widgets/export_csv_dialog.dart';
 import 'diary_detail_page.dart';
 import 'diary_write_page.dart';
 
@@ -113,6 +115,20 @@ class _DiaryHomePageState extends State<DiaryHomePage> {
     );
   }
 
+  Future<void> _showCsvExportDialog() async {
+    final count = await DiaryDao.getCount();
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (_) => ExportCsvDialog(
+        filePrefix: '日记',
+        recordCount: count,
+        headers: CsvExportHelper.diaryHeaders,
+        buildRows: CsvExportHelper.buildDiaryRows,
+      ),
+    );
+  }
+
   // 按天分组
   Map<String, List<DiaryEntry>> _groupByDay() {
     final map = <String, List<DiaryEntry>>{};
@@ -215,9 +231,16 @@ class _DiaryHomePageState extends State<DiaryHomePage> {
               icon: const Icon(Icons.search, size: 22),
               onPressed: () => setState(() => _isSearching = true),
             ),
-            IconButton(
-              icon: const Icon(Icons.ios_share, size: 20),
-              onPressed: _showExportDialog,
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, size: 22),
+              onSelected: (value) {
+                if (value == 'export_csv') _showCsvExportDialog();
+                if (value == 'export_text') _showExportDialog();
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: 'export_csv', child: Text('导出Excel')),
+                PopupMenuItem(value: 'export_text', child: Text('导出日记(文本)')),
+              ],
             ),
           ],
         ],

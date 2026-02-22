@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/refined_field_models.dart';
 import '../database/refined_field_dao.dart';
+import '../utils/csv_export_helper.dart';
+import '../widgets/export_csv_dialog.dart';
 import '../widgets/official_coin.dart';
 import '../widgets/empty_coin_slot.dart';
 import 'select_spirit_page.dart';
@@ -46,6 +48,20 @@ class _RefinedFieldPageState extends State<RefinedFieldPage> {
       _systems = systems;
       _isLoading = false;
     });
+  }
+
+  Future<void> _showCsvExportDialog() async {
+    final count = await RefinedFieldDao.getTotalCount();
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (_) => ExportCsvDialog(
+        filePrefix: '精养田',
+        recordCount: count,
+        headers: CsvExportHelper.refinedFieldHeaders,
+        buildRows: CsvExportHelper.buildRefinedFieldRows,
+      ),
+    );
   }
 
   Future<void> _addPersonToDepartment(Department department, SubCategory subCategory, OfficialSystem system) async {
@@ -250,6 +266,15 @@ class _RefinedFieldPageState extends State<RefinedFieldPage> {
                 const SnackBar(content: Text('搜索功能开发中')),
               );
             },
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.amber, size: 24),
+            onSelected: (value) {
+              if (value == 'export') _showCsvExportDialog();
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'export', child: Text('导出Excel')),
+            ],
           ),
         ],
       ),
