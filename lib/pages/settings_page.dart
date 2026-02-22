@@ -3,6 +3,7 @@ import '../database/spirit_dao.dart';
 import '../utils/csv_export_helper.dart';
 import '../widgets/export_csv_dialog.dart';
 import 'import_vcard_page.dart';
+import 'import_csv_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -56,6 +57,12 @@ class _SettingsPageState extends State<SettingsPage> {
               _buildDivider(),
               _buildItem(
                 Icons.table_chart_outlined,
+                '导入Excel',
+                onTap: () => _openCsvImport(),
+              ),
+              _buildDivider(),
+              _buildItem(
+                Icons.table_chart_outlined,
                 '导出Excel',
                 onTap: () => _showCsvExportDialog(),
               ),
@@ -87,7 +94,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 32),
             // Version info
             const Text(
-              '生灵池 版本 4.2.1 (2026.02.22)',
+              '生灵池 版本 4.2.2 (2026.02.22)',
               style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
             ),
             const SizedBox(height: 4),
@@ -160,6 +167,17 @@ class _SettingsPageState extends State<SettingsPage> {
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(builder: (_) => const ImportVcardPage()),
+    );
+    if (result == true && mounted) {
+      _dataChanged = true;
+      Navigator.pop(context, true);
+    }
+  }
+
+  Future<void> _openCsvImport() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => const ImportCsvPage()),
     );
     if (result == true && mounted) {
       _dataChanged = true;

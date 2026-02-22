@@ -18,8 +18,13 @@ class CsvExportHelper {
   }
 
   /// CSV字段转义：含逗号、双引号、换行时用双引号包裹
+  /// 对11位以上纯数字串使用="value"格式防止Excel/WPS科学计数法
   static String _escapeCsvField(dynamic field) {
     final str = field?.toString() ?? '';
+    // 强制文本：11位以上的纯数字串（含电话分隔符;；和国际前缀+）
+    if (str.length >= 11 && RegExp(r'^[\d+;；]+$').hasMatch(str)) {
+      return '="$str"';
+    }
     if (str.contains(',') ||
         str.contains('"') ||
         str.contains('\n') ||
@@ -53,7 +58,7 @@ class CsvExportHelper {
 
   static const spiritHeaders = [
     'ID', '姓名', '拼音', '首字母', '性别', '年龄', '民族', '身份证号',
-    '身份', '身份层级', '首要关系', '电话', '偏好', '性格', '亲密度',
+    '身份', '身份层级', '首要关系', '电话', '性格', '偏属',
     '分类标签', '备忘', '照片数', '有头像', '创建时间',
   ];
 
@@ -73,7 +78,6 @@ class CsvExportHelper {
               s.identityLevel ?? '',
               s.primaryRelation ?? '',
               s.phone.join(';'),
-              s.preference ?? '',
               s.personality ?? '',
               s.affinity ?? '',
               s.typeLabels.isNotEmpty

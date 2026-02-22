@@ -71,6 +71,11 @@ class CsvParser {
   static String _cleanString(String s) {
     // 先trim
     s = s.trim();
+
+    // 去除Excel/WPS公式文本前缀（="value"经CSV解析后变为=value）
+    if (s.startsWith('=')) {
+      s = s.substring(1);
+    }
     
     // 移除开头和结尾的不可见字符
     while (s.isNotEmpty) {
