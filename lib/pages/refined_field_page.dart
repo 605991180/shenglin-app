@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import '../models/refined_field_models.dart';
 import '../database/refined_field_dao.dart';
 import '../utils/csv_export_helper.dart';
+import '../utils/csv_import_helper.dart';
 import '../widgets/export_csv_dialog.dart';
+import '../widgets/import_result_dialog.dart';
 import '../widgets/official_coin.dart';
 import '../widgets/empty_coin_slot.dart';
 import 'select_spirit_page.dart';
@@ -60,6 +65,132 @@ class _RefinedFieldPageState extends State<RefinedFieldPage> {
         recordCount: count,
         headers: CsvExportHelper.refinedFieldHeaders,
         buildRows: CsvExportHelper.buildRefinedFieldRows,
+      ),
+    );
+  }
+
+  Future<void> _importCsv() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+        withData: true,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      String csvText;
+
+      if (file.bytes != null) {
+        // 使用utf8.decode正确解码，包括处理BOM
+        csvText = utf8.decode(file.bytes!, allowMalformed: true);
+      } else if (file.path != null) {
+        csvText = await File(file.path!).readAsString();
+      } else {
+        _showError('无法读取文件');
+        return;
+      }
+
+      // 解析CSV并检查缺失人员
+      final parsed = await CsvImportHelper.parseRefinedFieldCsv(csvText);
+      if (parsed.rows.isEmpty) {
+        _showError('CSV文件为空或格式错误');
+        return;
+      }
+
+      if (!mounted) return;
+
+      // 如果有缺失人员，显示提示弹窗
+      if (parsed.missingNames.isNotEmpty) {
+        showDialog(
+          context: context,
+          builder: (_) => MissingSpiritDialog(
+            missingNames: parsed.missingNames,
+            onSkip: () => _doImportRefinedField(parsed.rows, false),
+            onAddAndContinue: () => _doImportRefinedField(parsed.rows, true, parsed.missingNames),
+          ),
+        );
+      } else {
+        // 直接显示确认弹窗
+        showDialog(
+          context: context,
+          builder: (_) => ImportConfirmDialog(
+            title: '导入精养田',
+            recordCount: parsed.rows.length,
+            matchKey: '姓名',
+            extraInfo: '导入将重建精养田结构',
+            onConfirm: () => _doImportRefinedField(parsed.rows, false),
+          ),
+        );
+      }
+    } catch (e) {
+      _showError('选择文件失败: $e');
+    }
+  }
+
+  Future<void> _doImportRefinedField(
+    List<Map<String, String>> rows,
+    bool addMissing, [
+    List<String>? missingNames,
+  ]) async {
+    // 显示加载提示
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('正在导入...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      // 如果需要，先创建缺失的生灵
+      if (addMissing && missingNames != null && missingNames.isNotEmpty) {
+        await CsvImportHelper.createMissingSpirits(rows, missingNames);
+      }
+
+      final result = await CsvImportHelper.importRefinedField(rows);
+
+      if (!mounted) return;
+      Navigator.pop(context); // 关闭加载提示
+
+      // 显示结果弹窗
+      showDialog(
+        context: context,
+        builder: (_) => ImportResultDialog(
+          title: '导入完成',
+          result: result,
+        ),
+      );
+
+      // 刷新数据
+      if (result.added > 0) {
+        await _loadData();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // 关闭加载提示
+      _showError('导入失败: $e');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
       ),
     );
   }
@@ -215,8 +346,12 @@ class _RefinedFieldPageState extends State<RefinedFieldPage> {
       body: SafeArea(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator(color: Colors.amber))
-            : CustomScrollView(
-                slivers: [
+            : RefreshIndicator(
+                onRefresh: _loadData,
+                color: Colors.amber,
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
                   // 顶部标题栏
                   SliverToBoxAdapter(child: _buildHeader()),
                   // 系统列表
@@ -230,6 +365,7 @@ class _RefinedFieldPageState extends State<RefinedFieldPage> {
                   const SliverToBoxAdapter(child: SizedBox(height: 80)),
                 ],
               ),
+            ),
       ),
     );
   }
@@ -271,8 +407,10 @@ class _RefinedFieldPageState extends State<RefinedFieldPage> {
             icon: const Icon(Icons.more_vert, color: Colors.amber, size: 24),
             onSelected: (value) {
               if (value == 'export') _showCsvExportDialog();
+              if (value == 'import') _importCsv();
             },
             itemBuilder: (context) => const [
+              PopupMenuItem(value: 'import', child: Text('导入Excel')),
               PopupMenuItem(value: 'export', child: Text('导出Excel')),
             ],
           ),

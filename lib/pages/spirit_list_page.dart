@@ -126,9 +126,13 @@ class _SpiritListPageState extends State<SpiritListPage> {
       body: SafeArea(
         child: Stack(
           children: [
-            CustomScrollView(
-              controller: _scrollController,
-              slivers: [
+            RefreshIndicator(
+              onRefresh: _loadSpirits,
+              color: const Color(0xFF4CAF50),
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
                 // Header
                 SliverToBoxAdapter(child: _buildHeader()),
                 // Search
@@ -143,6 +147,7 @@ class _SpiritListPageState extends State<SpiritListPage> {
                 const SliverToBoxAdapter(
                     child: SizedBox(height: 80)),
               ],
+            ),
             ),
             // Alphabet index on the right
             if (_letters.isNotEmpty)

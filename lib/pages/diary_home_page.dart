@@ -1,12 +1,18 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../database/diary_dao.dart';
 import '../models/diary_entry.dart';
 import '../utils/csv_export_helper.dart';
+import '../utils/csv_import_helper.dart';
+import '../utils/csv_parser.dart';
 import '../widgets/diary_calendar.dart';
 import '../widgets/diary_card.dart';
 import '../widgets/diary_export_dialog.dart';
 import '../widgets/export_csv_dialog.dart';
+import '../widgets/import_result_dialog.dart';
 import 'diary_detail_page.dart';
 import 'diary_write_page.dart';
 
@@ -129,6 +135,112 @@ class _DiaryHomePageState extends State<DiaryHomePage> {
     );
   }
 
+  Future<void> _importCsv() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+        withData: true,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      String csvText;
+
+      if (file.bytes != null) {
+        // 使用utf8.decode正确解码，包括处理BOM
+        csvText = utf8.decode(file.bytes!, allowMalformed: true);
+      } else if (file.path != null) {
+        csvText = await File(file.path!).readAsString();
+      } else {
+        _showError('无法读取文件');
+        return;
+      }
+
+      // 解析CSV获取行数
+      final parsed = CsvParser.parse(csvText);
+      if (parsed.rows.isEmpty) {
+        _showError('CSV文件为空或格式错误');
+        return;
+      }
+
+      if (!mounted) return;
+
+      // 显示导入模式选择弹窗
+      showDialog(
+        context: context,
+        builder: (_) => DiaryImportModeDialog(
+          recordCount: parsed.rows.length,
+          onAppend: () => _doImportDiaries(csvText, false),
+          onOverwrite: () => _doImportDiaries(csvText, true),
+        ),
+      );
+    } catch (e) {
+      _showError('选择文件失败: $e');
+    }
+  }
+
+  Future<void> _doImportDiaries(String csvText, bool overwrite) async {
+    // 显示加载提示
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('正在导入...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final result = await CsvImportHelper.importDiaries(
+        csvText,
+        overwrite: overwrite,
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context); // 关闭加载提示
+
+      // 显示结果弹窗
+      showDialog(
+        context: context,
+        builder: (_) => ImportResultDialog(
+          title: '导入完成',
+          result: result,
+        ),
+      );
+
+      // 刷新数据
+      if (result.added > 0) {
+        await _loadData();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // 关闭加载提示
+      _showError('导入失败: $e');
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   // 按天分组
   Map<String, List<DiaryEntry>> _groupByDay() {
     final map = <String, List<DiaryEntry>>{};
@@ -236,8 +348,10 @@ class _DiaryHomePageState extends State<DiaryHomePage> {
               onSelected: (value) {
                 if (value == 'export_csv') _showCsvExportDialog();
                 if (value == 'export_text') _showExportDialog();
+                if (value == 'import') _importCsv();
               },
               itemBuilder: (context) => const [
+                PopupMenuItem(value: 'import', child: Text('导入Excel')),
                 PopupMenuItem(value: 'export_csv', child: Text('导出Excel')),
                 PopupMenuItem(value: 'export_text', child: Text('导出日记(文本)')),
               ],
@@ -272,9 +386,13 @@ class _DiaryHomePageState extends State<DiaryHomePage> {
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : _entries.isEmpty
-                    ? _buildEmptyState()
-                    : _buildTimeline(),
+                : RefreshIndicator(
+                    onRefresh: _loadData,
+                    color: const Color(0xFF4CAF50),
+                    child: _entries.isEmpty
+                        ? _buildEmptyState()
+                        : _buildTimeline(),
+                  ),
           ),
         ],
       ),
@@ -287,24 +405,32 @@ class _DiaryHomePageState extends State<DiaryHomePage> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.book_outlined,
-              size: 64, color: Colors.grey.withAlpha(100)),
-          const SizedBox(height: 16),
-          const Text(
-            '还没有日记',
-            style: TextStyle(fontSize: 15, color: Color(0xFF999999)),
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.5,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.book_outlined,
+                    size: 64, color: Colors.grey.withAlpha(100)),
+                const SizedBox(height: 16),
+                const Text(
+                  '还没有日记',
+                  style: TextStyle(fontSize: 15, color: Color(0xFF999999)),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '点击右下角按钮开始记录',
+                  style: TextStyle(fontSize: 13, color: Color(0xFFCCCCCC)),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
-          const Text(
-            '点击右下角按钮开始记录',
-            style: TextStyle(fontSize: 13, color: Color(0xFFCCCCCC)),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

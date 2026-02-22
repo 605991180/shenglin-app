@@ -12,16 +12,25 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  bool _dataChanged = false;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          Navigator.pop(context, _dataChanged);
+        }
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.chevron_left, color: Color(0xFF333333)),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context, _dataChanged),
         ),
         title: const Text(
           '通讯设置',
@@ -78,7 +87,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 32),
             // Version info
             const Text(
-              '生灵池 版本 4.2.0 (2026.02.22)',
+              '生灵池 版本 4.2.1 (2026.02.22)',
               style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
             ),
             const SizedBox(height: 4),
@@ -90,6 +99,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -152,6 +162,7 @@ class _SettingsPageState extends State<SettingsPage> {
       MaterialPageRoute(builder: (_) => const ImportVcardPage()),
     );
     if (result == true && mounted) {
+      _dataChanged = true;
       Navigator.pop(context, true);
     }
   }
