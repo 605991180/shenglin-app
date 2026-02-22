@@ -7,8 +7,11 @@ class Spirit {
   final String? avatar;
   final String? gender;
   final int? age;
+  final String? ethnicity;
+  final String? idNumber;
   final String? identity;
   final String? identityLevel;
+  final String? primaryRelation;
   final String? preference;
   final String? personality;
   final String? affinity;
@@ -27,8 +30,11 @@ class Spirit {
     this.avatar,
     this.gender,
     this.age,
+    this.ethnicity,
+    this.idNumber,
     this.identity,
     this.identityLevel,
+    this.primaryRelation,
     this.preference,
     this.personality,
     this.affinity,
@@ -53,8 +59,11 @@ class Spirit {
       'avatar': avatar,
       'gender': gender,
       'age': age,
+      'ethnicity': ethnicity,
+      'id_number': idNumber,
       'identity': identity,
       'identity_level': identityLevel,
+      'primary_relation': primaryRelation,
       'preference': preference,
       'personality': personality,
       'affinity': affinity,
@@ -75,8 +84,11 @@ class Spirit {
       avatar: map['avatar'] as String?,
       gender: map['gender'] as String?,
       age: map['age'] as int?,
+      ethnicity: map['ethnicity'] as String?,
+      idNumber: map['id_number'] as String?,
       identity: map['identity'] as String?,
       identityLevel: map['identity_level'] as String?,
+      primaryRelation: map['primary_relation'] as String?,
       preference: map['preference'] as String?,
       personality: map['personality'] as String?,
       affinity: map['affinity'] as String?,
@@ -106,8 +118,11 @@ class Spirit {
     String? avatar,
     String? gender,
     int? age,
+    String? ethnicity,
+    String? idNumber,
     String? identity,
     String? identityLevel,
+    String? primaryRelation,
     String? preference,
     String? personality,
     String? affinity,
@@ -125,8 +140,11 @@ class Spirit {
       avatar: avatar ?? this.avatar,
       gender: gender ?? this.gender,
       age: age ?? this.age,
+      ethnicity: ethnicity ?? this.ethnicity,
+      idNumber: idNumber ?? this.idNumber,
       identity: identity ?? this.identity,
       identityLevel: identityLevel ?? this.identityLevel,
+      primaryRelation: primaryRelation ?? this.primaryRelation,
       preference: preference ?? this.preference,
       personality: personality ?? this.personality,
       affinity: affinity ?? this.affinity,

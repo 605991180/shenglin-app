@@ -18,7 +18,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       onConfigure: (db) async {
@@ -35,8 +35,11 @@ class DatabaseHelper {
         avatar TEXT,
         gender TEXT,
         age INTEGER,
+        ethnicity TEXT,
+        id_number TEXT,
         identity TEXT,
         identity_level TEXT,
+        primary_relation TEXT,
         preference TEXT,
         personality TEXT,
         affinity TEXT,
@@ -181,6 +184,12 @@ class DatabaseHelper {
           saved_at INTEGER NOT NULL
         )
       ''');
+    }
+    if (oldVersion < 5) {
+      // 添加民族、身份证号码、主要关系字段
+      await db.execute('ALTER TABLE spirits ADD COLUMN ethnicity TEXT');
+      await db.execute('ALTER TABLE spirits ADD COLUMN id_number TEXT');
+      await db.execute('ALTER TABLE spirits ADD COLUMN primary_relation TEXT');
     }
   }
 

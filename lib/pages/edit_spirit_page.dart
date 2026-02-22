@@ -18,6 +18,9 @@ class EditSpiritPage extends StatefulWidget {
 class _EditSpiritPageState extends State<EditSpiritPage> {
   late TextEditingController _nameController;
   late TextEditingController _ageController;
+  late TextEditingController _ethnicityController;
+  late TextEditingController _idNumberController;
+  late TextEditingController _primaryRelationController;
   late TextEditingController _affinityController;
   late TextEditingController _personalityController;
   late TextEditingController _memoController;
@@ -43,6 +46,9 @@ class _EditSpiritPageState extends State<EditSpiritPage> {
     final s = widget.spirit;
     _nameController = TextEditingController(text: s.name);
     _ageController = TextEditingController(text: s.age?.toString() ?? '');
+    _ethnicityController = TextEditingController(text: s.ethnicity ?? '');
+    _idNumberController = TextEditingController(text: s.idNumber ?? '');
+    _primaryRelationController = TextEditingController(text: s.primaryRelation ?? '');
     _affinityController = TextEditingController(text: s.affinity ?? '');
     _personalityController = TextEditingController(text: s.personality ?? '');
     _memoController = TextEditingController(text: s.memo ?? '');
@@ -63,6 +69,9 @@ class _EditSpiritPageState extends State<EditSpiritPage> {
   void dispose() {
     _nameController.dispose();
     _ageController.dispose();
+    _ethnicityController.dispose();
+    _idNumberController.dispose();
+    _primaryRelationController.dispose();
     _affinityController.dispose();
     _personalityController.dispose();
     _memoController.dispose();
@@ -91,8 +100,17 @@ class _EditSpiritPageState extends State<EditSpiritPage> {
       name: name,
       gender: _gender,
       age: int.tryParse(_ageController.text.trim()),
+      ethnicity: _ethnicityController.text.trim().isEmpty
+          ? null
+          : _ethnicityController.text.trim(),
+      idNumber: _idNumberController.text.trim().isEmpty
+          ? null
+          : _idNumberController.text.trim(),
       identity: _identity,
       identityLevel: _getIdentityLevelValue(),
+      primaryRelation: _primaryRelationController.text.trim().isEmpty
+          ? null
+          : _primaryRelationController.text.trim(),
       affinity: _affinityController.text.trim().isEmpty
           ? null
           : _affinityController.text.trim(),
@@ -339,8 +357,15 @@ class _EditSpiritPageState extends State<EditSpiritPage> {
           _buildEditRow('年龄', _ageController,
               keyboardType: TextInputType.number, suffix: '岁'),
           _buildDivider(),
+          _buildEditRow('民族', _ethnicityController),
+          _buildDivider(),
+          _buildEditRow('身份证号', _idNumberController,
+              keyboardType: TextInputType.number),
+          _buildDivider(),
           // 主要身份
           _buildIdentitySection(),
+          _buildDivider(),
+          _buildEditRow('主要关系', _primaryRelationController),
           _buildDivider(),
           _buildEditRow('偏属', _affinityController),
           _buildDivider(),

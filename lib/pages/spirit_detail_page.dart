@@ -243,7 +243,10 @@ class _SpiritDetailPageState extends State<SpiritDetailPage> {
           _buildDetailRow('性别', _spirit.gender ?? '未设置'),
           _buildDetailRow(
               '年龄', _spirit.age != null ? '${_spirit.age}岁' : '未设置'),
+          _buildDetailRow('民族', _spirit.ethnicity ?? '未设置'),
+          _buildDetailRow('身份证号', _spirit.idNumber ?? '未设置'),
           _buildDetailRow('主要身份', _buildIdentityText()),
+          _buildDetailRow('主要关系', _spirit.primaryRelation ?? '未设置'),
           _buildDetailRow('偏属', _spirit.affinity ?? '未设置'),
           _buildDetailRow('性格', _spirit.personality ?? '未设置',
               isLast: true),
